@@ -58,14 +58,9 @@ public class EmployeeController {
 	public String showList(Model model) {
 		List<Employee> employeeList = employeeService.showList();
 		model.addAttribute("employeeList", employeeList);
-		String headerUserName = (String) session.getAttribute("headerUserName");
-		if (headerUserName == null) {
-			// セッションにユーザー名がない場合はログイン画面にリダイレクト
-			return "redirect:/login"; // ログインページにリダイレクト
-		}
-
-		// セッションから取得したユーザー名をモデルに追加
-		model.addAttribute("headerUserName", headerUserName);
+		if (!checkSessionAndRedirect(model)) {
+            return "redirect:/login"; // ログインページにリダイレクト
+        }
 		return "employee/list";
 	}
 
@@ -74,14 +69,9 @@ public class EmployeeController {
 	public String searchEmployees(@RequestParam("searchKeyword") String searchKeyword, Model model) {
 		List<Employee> filteredEmployees = employeeService.searchEmployees(searchKeyword);
 		model.addAttribute("employeeList", filteredEmployees);
-		String headerUserName = (String) session.getAttribute("headerUserName");
-		if (headerUserName == null) {
-			// セッションにユーザー名がない場合はログイン画面にリダイレクト
-			return "redirect:/login"; // ログインページにリダイレクト
-		}
-
-		// セッションから取得したユーザー名をモデルに追加
-		model.addAttribute("headerUserName", headerUserName);
+		if (!checkSessionAndRedirect(model)) {
+            return "redirect:/login"; // ログインページにリダイレクト
+        }
 		return "employee/list"; 
 	}
 
@@ -99,14 +89,9 @@ public class EmployeeController {
 	public String showDetail(String id, Model model) {
 		Employee employee = employeeService.showDetail(Integer.parseInt(id));
 		model.addAttribute("employee", employee);
-		String headerUserName = (String) session.getAttribute("headerUserName");
-		if (headerUserName == null) {
-			// セッションにユーザー名がない場合はログイン画面にリダイレクト
-			return "redirect:/login"; // ログインページにリダイレクト
-		}
-
-		// セッションから取得したユーザー名をモデルに追加
-		model.addAttribute("headerUserName", headerUserName);
+		if (!checkSessionAndRedirect(model)) {
+            return "redirect:/login"; // ログインページにリダイレクト
+        }
 		return "employee/detail";
 	}
 
@@ -130,4 +115,17 @@ public class EmployeeController {
 		employeeService.update(employee);
 		return "redirect:/employee/showList";
 	}
+
+	// ヘッダー表示のメソッド
+	private boolean checkSessionAndRedirect(Model model) {
+        String headerUserName = (String) session.getAttribute("headerUserName");
+        if (headerUserName == null) {
+            // セッションにユーザー名がない場合はログイン画面にリダイレクト
+            return false;  // セッションがない場合、リダイレクト処理を呼び出し
+        }
+
+        // セッションから取得したユーザー名をモデルに追加
+        model.addAttribute("headerUserName", headerUserName);
+        return true;
+    }
 }
