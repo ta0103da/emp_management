@@ -1,6 +1,7 @@
 package com.example.repository;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
@@ -20,6 +21,9 @@ import com.example.domain.Employee;
  */
 @Repository
 public class EmployeeRepository {
+
+	@Autowired
+	private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 	/**
 	 * Employeeオブジェクトを生成するローマッパー.
@@ -82,5 +86,16 @@ public class EmployeeRepository {
 
 		String updateSql = "UPDATE employees SET dependents_count=:dependentsCount WHERE id=:id";
 		template.update(updateSql, param);
+	}
+
+	public List<Employee> searchKeyword(String searchKeyword) {
+
+		String sql = "SELECT id, name, image, gender, hire_date, mail_address, zip_code, address, telephone, salary, characteristics, dependents_count "
+				+ "FROM employees WHERE name LIKE :searchKeyword";
+
+		Map<String, Object> params = Map.of("searchKeyword", "%" + searchKeyword + "%");
+		List<Employee> developmentList = namedParameterJdbcTemplate.query(sql, params, EMPLOYEE_ROW_MAPPER);
+
+		return developmentList;
 	}
 }

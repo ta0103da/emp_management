@@ -11,10 +11,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.domain.Employee;
 import com.example.form.UpdateEmployeeForm;
 import com.example.service.EmployeeService;
+
+import jakarta.servlet.http.HttpSession;
 
 /**
  * 従業員情報を操作するコントローラー.
@@ -28,6 +31,9 @@ public class EmployeeController {
 
 	@Autowired
 	private EmployeeService employeeService;
+
+	@Autowired
+	private HttpSession session;
 
 	/**
 	 * 使用するフォームオブジェクトをリクエストスコープに格納する.
@@ -52,7 +58,31 @@ public class EmployeeController {
 	public String showList(Model model) {
 		List<Employee> employeeList = employeeService.showList();
 		model.addAttribute("employeeList", employeeList);
+		String headerUserName = (String) session.getAttribute("headerUserName");
+		if (headerUserName == null) {
+			// セッションにユーザー名がない場合はログイン画面にリダイレクト
+			return "redirect:/login"; // ログインページにリダイレクト
+		}
+
+		// セッションから取得したユーザー名をモデルに追加
+		model.addAttribute("headerUserName", headerUserName);
 		return "employee/list";
+	}
+
+	// 検索結果を表示
+	@GetMapping("/search")
+	public String searchEmployees(@RequestParam("searchKeyword") String searchKeyword, Model model) {
+		List<Employee> filteredEmployees = employeeService.searchEmployees(searchKeyword);
+		model.addAttribute("employeeList", filteredEmployees);
+		String headerUserName = (String) session.getAttribute("headerUserName");
+		if (headerUserName == null) {
+			// セッションにユーザー名がない場合はログイン画面にリダイレクト
+			return "redirect:/login"; // ログインページにリダイレクト
+		}
+
+		// セッションから取得したユーザー名をモデルに追加
+		model.addAttribute("headerUserName", headerUserName);
+		return "employee/list"; 
 	}
 
 	/////////////////////////////////////////////////////
@@ -69,6 +99,14 @@ public class EmployeeController {
 	public String showDetail(String id, Model model) {
 		Employee employee = employeeService.showDetail(Integer.parseInt(id));
 		model.addAttribute("employee", employee);
+		String headerUserName = (String) session.getAttribute("headerUserName");
+		if (headerUserName == null) {
+			// セッションにユーザー名がない場合はログイン画面にリダイレクト
+			return "redirect:/login"; // ログインページにリダイレクト
+		}
+
+		// セッションから取得したユーザー名をモデルに追加
+		model.addAttribute("headerUserName", headerUserName);
 		return "employee/detail";
 	}
 
