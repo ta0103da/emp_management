@@ -60,4 +60,14 @@ public class EmployeeService {
 
 		return employee;
     }
+
+	// メールアドレス重複チェック
+    public boolean isEmailDuplicate(String mailAddress) {
+		Employee existingAdmin = employeeRepository.findByMailAddress(mailAddress);
+
+		if (existingAdmin == null) {
+			return false;
+		}
+		return true;
+    }
 }

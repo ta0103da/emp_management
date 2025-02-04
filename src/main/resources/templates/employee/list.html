@@ -40,7 +40,7 @@
             </li>
           </ul>
           <p class="navbar-text navbar-right">
-            <span th:text="${headerUserName}">山田太郎</span>さんこんにちは！ &nbsp;&nbsp;&nbsp;
+            <span th:text="${session.headerUserName}">山田太郎</span>さんこんにちは！ &nbsp;&nbsp;&nbsp;
             <a href="../administrator/login.html" class="navbar-link" th:href="@{/logout}">ログアウト</a>
           </p>
         </div>

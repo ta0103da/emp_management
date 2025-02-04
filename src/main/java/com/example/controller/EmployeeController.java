@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,6 @@ import com.example.domain.Employee;
 import com.example.form.UpdateEmployeeForm;
 import com.example.service.EmployeeService;
 
-import jakarta.servlet.http.HttpSession;
-
 /**
  * 従業員情報を操作するコントローラー.
  * 
@@ -31,9 +30,6 @@ public class EmployeeController {
 
 	@Autowired
 	private EmployeeService employeeService;
-
-	@Autowired
-	private HttpSession session;
 
 	/**
 	 * 使用するフォームオブジェクトをリクエストスコープに格納する.
@@ -58,9 +54,6 @@ public class EmployeeController {
 	public String showList(Model model) {
 		List<Employee> employeeList = employeeService.showList();
 		model.addAttribute("employeeList", employeeList);
-		if (!checkSessionAndRedirect(model)) {
-            return "redirect:/login"; // ログインページにリダイレクト
-        }
 		return "employee/list";
 	}
 
@@ -69,10 +62,7 @@ public class EmployeeController {
 	public String searchEmployees(@RequestParam("searchKeyword") String searchKeyword, Model model) {
 		List<Employee> filteredEmployees = employeeService.searchEmployees(searchKeyword);
 		model.addAttribute("employeeList", filteredEmployees);
-		if (!checkSessionAndRedirect(model)) {
-            return "redirect:/login"; // ログインページにリダイレクト
-        }
-		return "employee/list"; 
+		return "employee/list";
 	}
 
 	/////////////////////////////////////////////////////
@@ -89,9 +79,9 @@ public class EmployeeController {
 	public String showDetail(String id, Model model) {
 		Employee employee = employeeService.showDetail(Integer.parseInt(id));
 		model.addAttribute("employee", employee);
-		if (!checkSessionAndRedirect(model)) {
-            return "redirect:/login"; // ログインページにリダイレクト
-        }
+		
+		List<String> genders = Arrays.asList("男性", "女性", "その他");
+		model.addAttribute("genders", genders);
 		return "employee/detail";
 	}
 
@@ -106,26 +96,27 @@ public class EmployeeController {
 	 */
 	@PostMapping("/update")
 	public String update(@Validated UpdateEmployeeForm form, BindingResult result, Model model) {
+		// メールアドレスの重複チェック
+		if (employeeService.isEmailDuplicate(form.getMailAddress())) {
+			result.rejectValue("mailAddress", "error.mailAddress", "メールアドレスが重複しています");
+		}
 		if (result.hasErrors()) {
 			return showDetail(form.getId(), model);
 		}
+		System.out.println(form.getSalary());
 		Employee employee = new Employee();
 		employee.setId(form.getIntId());
+		employee.setName(form.getName());
+		employee.setGender(form.getGender());
+		employee.setHireDate(form.getHireDate());
+		employee.setMailAddress(form.getMailAddress());
+		employee.setTelephone(form.getTelephone());
+		employee.setZipCode(form.getZipCode());
+		employee.setAddress(form.getAddress());
+		employee.setSalary(form.getIntSalaryCount());
+		employee.setCharacteristics(form.getCharacteristics());
 		employee.setDependentsCount(form.getIntDependentsCount());
 		employeeService.update(employee);
 		return "redirect:/employee/showList";
 	}
-
-	// ヘッダー表示のメソッド
-	private boolean checkSessionAndRedirect(Model model) {
-        String headerUserName = (String) session.getAttribute("headerUserName");
-        if (headerUserName == null) {
-            // セッションにユーザー名がない場合はログイン画面にリダイレクト
-            return false;  // セッションがない場合、リダイレクト処理を呼び出し
-        }
-
-        // セッションから取得したユーザー名をモデルに追加
-        model.addAttribute("headerUserName", headerUserName);
-        return true;
-    }
 }

@@ -84,7 +84,7 @@ public class EmployeeRepository {
 	public void update(Employee employee) {
 		SqlParameterSource param = new BeanPropertySqlParameterSource(employee);
 
-		String updateSql = "UPDATE employees SET dependents_count=:dependentsCount WHERE id=:id";
+		String updateSql = "UPDATE employees SET name=:name,gender=:gender,hire_date=:hireDate,mail_address=:mailAddress,zip_code=:zipCode,address=:address,telephone=:telephone,salary=:salary,characteristics=:characteristics,dependents_count=:dependentsCount WHERE id=:id";
 		template.update(updateSql, param);
 	}
 
@@ -98,4 +98,14 @@ public class EmployeeRepository {
 
 		return developmentList;
 	}
+
+    public Employee findByMailAddress(String mailAddress) {
+		String sql = "select id,name,mail_address,password from administrators where mail_address=:mailAddress";
+		SqlParameterSource param = new MapSqlParameterSource().addValue("mailAddress", mailAddress);
+		List<Employee> employeeList = template.query(sql, param, EMPLOYEE_ROW_MAPPER);
+		if (employeeList.size() == 0) {
+			return null;
+		}
+		return employeeList.get(0);
+    }
 }
